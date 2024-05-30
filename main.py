@@ -27,8 +27,9 @@ def run_random_account(excel: Excel):
                 sleeping(settings.SLEEP_AFTER_TX)
 
             # run modules
-            modules_data["status"] = Clusters(wallet=wallet).process_mint()
-
+            # modules_data["status"] = Clusters(wallet=wallet).process_mint()
+            modules_data["status"] = True
+                
         except Exception as err:
             modules_data["status"] = str(err)
             logger.error(f'[-] Web3 | {wallet.address} | Account error: {err}')
