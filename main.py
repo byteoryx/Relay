@@ -18,18 +18,37 @@ def run_random_account(excel: Excel):
 
             logger.info(f'[•] Web3 | {wallet.address}')
 
-            if wallet.get_balance(chain_name="ethereum", human=True) < settings.MIN_ETH_BALANCE:
+            destination_chain = settings.RELAY_BRIDGE_DESTINATION.lower()
+            if destination_chain not in ("erc20", "zora"):
+                raise Exception(f"wrong destination chain selected in setting.py. Should be erc20 or zora. Selected {destination_chain}")
+
+            if destination_chain == "erc20":
+                balance = wallet.get_balance(chain_name="ethereum", human=True)
+            else:
+                balance = wallet.get_balance(chain_name="zora", human=True)
+
+            if balance < settings.MIN_ETH_BALANCE:
                 chain, amount = wallet.okx_withdraw()
+
                 sleeping(settings.SLEEP_AFTER_TX)
-                eth_balance = wallet.get_balance(chain_name="ethereum", human=True)
-                Relay(wallet=wallet, from_chain=chain, amount=amount)
-                wallet.wait_balance(chain_name="ethereum", needed_balance=eth_balance, only_more=True)
+
+                if destination_chain == "erc20":
+                    eth_balance = wallet.get_balance(chain_name="ethereum", human=True)
+                else:
+                    eth_balance = wallet.get_balance(chain_name="zora", human=True)
+
+                Relay(wallet=wallet, from_chain=chain, amount=amount, destination=destination_chain)
+                if destination_chain == "erc20":
+                    wallet.wait_balance(chain_name="ethereum", needed_balance=eth_balance, only_more=True)
+                else:
+                    wallet.wait_balance(chain_name="zora", needed_balance=eth_balance, only_more=True)
+
                 sleeping(settings.SLEEP_AFTER_TX)
 
             # run modules
             # modules_data["status"] = Clusters(wallet=wallet).process_mint()
             modules_data["status"] = True
-                
+
         except Exception as err:
             modules_data["status"] = str(err)
             logger.error(f'[-] Web3 | {wallet.address} | Account error: {err}')
@@ -49,7 +68,9 @@ def run_random_account(excel: Excel):
 
 
 if __name__ == '__main__':
-    if settings.PROXY in ['http://log:pass@ip:port', '']: logger.error('You will not use proxy')
+    if settings.PROXY in ['http://log:pass@ip:port', '']:
+        logger.error('You will not use proxy')
+
     db = DataBase()
 
     while True:
@@ -59,7 +80,8 @@ if __name__ == '__main__':
                 db.create_modules()
                 print('')
             case 'Start':
-                if run_random_account(excel=Excel(total_len=db.window_name.accs_amount, name="clusters")) == 'Ended': break
+                if run_random_account(excel=Excel(total_len=db.window_name.accs_amount, name="clusters")) == 'Ended':
+                    break
                 print('')
 
     sleep(0.1)

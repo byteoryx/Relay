@@ -1,17 +1,19 @@
-from eth_account.messages import encode_defunct
-from web3.middleware import geth_poa_middleware
+import base64
+import hmac
 from random import uniform, choice
-from typing import Union, Optional
-import requests, hmac, base64
 from time import sleep
-from web3 import Web3
+from typing import Union, Optional
 
-from modules.utils import logger, sleeping
-from modules.database import DataBase
+import requests
+from eth_account.messages import encode_defunct
+from requests.exceptions import HTTPError
+from web3 import Web3
+from web3.middleware import geth_poa_middleware
+
 import modules.config as config
 import settings
-
-from requests.exceptions import HTTPError
+from modules.database import DataBase
+from modules.utils import logger, sleeping
 
 
 class Wallet:
@@ -25,12 +27,10 @@ class Wallet:
 
         self.max_retries = 5
 
-
     def get_web3(self, chain_name: str):
         web3 = Web3(Web3.HTTPProvider(settings.RPCS[chain_name]))
         web3.middleware_onion.inject(geth_poa_middleware, layer=0)
         return web3
-
 
     def wait_for_gwei(self):
         for chain_data in [
@@ -51,7 +51,6 @@ class Wallet:
                     logger.warning(f'[•] Web3 | {chain_data["chain_name"].title()} gwei waiting error: {err}')
                     sleeping(10)
 
-
     def get_gas(self, chain_name, increasing_gwei=0):
         if chain_name == 'zksync':
             max_priority = 0
@@ -67,7 +66,6 @@ class Wallet:
 
         return {'maxPriorityFeePerGas': max_priority, 'maxFeePerGas': max_fee}
 
-
     def sent_tx(self, chain_name: str, tx, tx_label, tx_raw=False, value=0, increasing_gwei=0):
         try:
             web3 = self.get_web3(chain_name=chain_name)
@@ -79,7 +77,8 @@ class Wallet:
                     'value': value,
                     **self.get_gas(chain_name=chain_name, increasing_gwei=increasing_gwei),
                 })
-            else: tx_completed = tx
+            else:
+                tx_completed = tx
 
             signed_tx = web3.eth.account.sign_transaction(tx_completed, self.privatekey)
             raw_tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
@@ -105,29 +104,34 @@ class Wallet:
 
         except Exception as err:
             if 'already known' in str(err):
-                try: raw_tx_hash
-                except: raw_tx_hash = ''
+                try:
+                    raw_tx_hash
+                except:
+                    raw_tx_hash = ''
                 logger.warning(f'{tx_label} | Couldnt get tx hash, thinking tx is success ({raw_tx_hash})')
                 sleeping(15)
                 return tx_hash
             elif "replacement transaction underpriced" in str(err) or "not in the chain after" in str(err):
                 logger.warning(f'[-] Web3 | {tx_label} | couldnt send tx, increasing gwei')
-                return self.sent_tx(chain_name=chain_name, tx=tx, tx_label=tx_label, tx_raw=tx_raw, value=value, increasing_gwei=increasing_gwei+0.05)
+                return self.sent_tx(chain_name=chain_name, tx=tx, tx_label=tx_label, tx_raw=tx_raw, value=value, increasing_gwei=increasing_gwei + 0.05)
 
-            try: encoded_tx = f'\nencoded tx: {tx_completed._encode_transaction_data()}'
-            except: encoded_tx = ''
+            try:
+                encoded_tx = f'\nencoded tx: {tx_completed._encode_transaction_data()}'
+            except:
+                encoded_tx = ''
             raise ValueError(f'tx failed error: {err}{encoded_tx}')
-
 
     def get_balance(self, chain_name: str, token_name=False, token_address=False, human=False):
         web3 = self.get_web3(chain_name=chain_name)
         if token_name: token_address = config.TOKEN_ADDRESSES[token_name]
         if token_address: contract = web3.eth.contract(address=web3.to_checksum_address(token_address),
-                                     abi='[{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"}]')
+                                                       abi='[{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"}]')
         while True:
             try:
-                if token_address: balance = contract.functions.balanceOf(self.address).call()
-                else: balance = web3.eth.get_balance(self.address)
+                if token_address:
+                    balance = contract.functions.balanceOf(self.address).call()
+                else:
+                    balance = web3.eth.get_balance(self.address)
 
                 if not human: return balance
 
@@ -137,7 +141,6 @@ class Wallet:
                 logger.warning(f'[•] Web3 | Get balance error: {err}')
                 sleep(5)
 
-
     def wait_balance(self, chain_name: str, needed_balance: Union[int, float], only_more: bool = False, token_name: Optional[str] = False, token_address: Optional[str] = False):
         " needed_balance: human digit "
         if token_name:
@@ -145,21 +148,25 @@ class Wallet:
 
         elif token_address:
             contract = self.get_web3(chain_name=chain_name).eth.contract(address=Web3().to_checksum_address(token_address),
-                                         abi='[{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}]')
+                                                                         abi='[{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}]')
             token_name = contract.functions.name().call()
 
         else:
             token_name = 'ETH'
 
-        if only_more: logger.debug(f'[•] Web3 | Waiting for balance more than {round(needed_balance, 6)} {token_name} in {chain_name.upper()}')
-        else: logger.debug(f'[•] Web3 | Waiting for {round(needed_balance, 6)} {token_name} balance in {chain_name.upper()}')
+        if only_more:
+            logger.debug(f'[•] Web3 | Waiting for balance more than {round(needed_balance, 6)} {token_name} in {chain_name.upper()}')
+        else:
+            logger.debug(f'[•] Web3 | Waiting for {round(needed_balance, 6)} {token_name} balance in {chain_name.upper()}')
 
         while True:
             try:
                 new_balance = self.get_balance(chain_name=chain_name, human=True, token_address=token_address)
 
-                if only_more: status = new_balance > needed_balance
-                else: status = new_balance >= needed_balance
+                if only_more:
+                    status = new_balance > needed_balance
+                else:
+                    status = new_balance >= needed_balance
                 if status:
                     logger.debug(f'[•] Web3 | New balance: {round(new_balance, 6)} {token_name}\n')
                     return new_balance
@@ -168,12 +175,10 @@ class Wallet:
                 logger.warning(f'[•] Web3 | Wait balance error: {err}')
                 sleep(10)
 
-
     def sign_message(self, text: str):
         message = encode_defunct(text=text)
         signed_message = self.account.sign_message(message)
         return signed_message.signature.hex()
-
 
     def okx_withdraw(self, retry=0):
 

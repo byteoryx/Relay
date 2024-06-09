@@ -4,9 +4,10 @@ import settings
 
 
 class Relay(Wallet):
-    def __init__(self, wallet: Wallet, from_chain: str, amount: float):
+    def __init__(self, wallet: Wallet, from_chain: str, amount: float, destination: str):
         super().__init__(privatekey=wallet.privatekey, recipient=wallet.recipient, db=wallet.db, browser=wallet.browser)
 
+        self.destination = destination.lower()
         self.from_chain = from_chain
         self.amount = amount
         self.value = int(float(amount) * 1e18)
@@ -16,11 +17,10 @@ class Relay(Wallet):
         self.wait_for_gwei()
         self.bridge()
 
-
     def bridge(self, retry=0):
-        module_str = f'relay bridge {self.amount} ETH {self.from_chain} -> ethereum'
+        module_str = f'relay bridge {self.amount} ETH {self.from_chain} -> {self.destination}'
         try:
-            tx_data = self.browser.get_relay_tx(address=self.address, chain=self.from_chain, value=self.value)
+            tx_data = self.browser.get_relay_tx(address=self.address, chain=self.from_chain, value=self.value, destination_chain=self.destination)
 
             contract_txn = {
                 'from': self.address,

@@ -155,8 +155,14 @@ class Browser:
                 raise Exception(f"Coudlnt add chain in domain: {err}{response}")
 
 
-    def get_relay_tx(self, address: str, chain: str, value: int, retry=0):
+    def get_relay_tx(self, address: str, chain: str, value: int, destination_chain: str, retry=0):
         try:
+            if destination_chain == "erc20":
+                destination_chain_id = 1
+            elif destination_chain == "zora":
+                destination_chain_id = 7777777
+            else:
+                raise Exception(f"wrong destination chain. should be erc20 or zora. your input is '{destination_chain}'")
 
             if chain == "arbitrum": chain_id = 42161
             elif chain == "optimism": chain_id = 10
@@ -171,7 +177,7 @@ class Browser:
             payload = {
                 "user": address,
                 "originChainId": chain_id,
-                "destinationChainId": 1,
+                "destinationChainId": destination_chain_id,
                 "currency": "eth",
                 "recipient": address,
                 "amount": str(int(value / 2)),
@@ -191,8 +197,8 @@ class Browser:
             except: response = ""
 
             if retry < settings.RETRY:
-                logger.error(f'[-] Browser | Coudlnt get relay tx: {err}{response} [{retry + 1}/{settings.RETRY}]')
+                logger.error(f'[-] Browser | Could"nt get relay tx: {err}{response} [{retry + 1}/{settings.RETRY}]')
                 sleeping(10)
-                return self.get_relay_tx(address=address, chain=chain, value=value, retry=retry+1)
+                return self.get_relay_tx(address=address, chain=chain, value=value, retry=retry+1, destination_chain=destination_chain)
             else:
-                raise Exception(f"Coudlnt get relay tx: {err}{response}")
+                raise Exception(f"Could'nt get relay tx: {err}{response}")
