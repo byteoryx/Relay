@@ -44,5 +44,5 @@ CHANGE_IP_LINK = 'https://changeip.mobileproxy.space/?proxy_key=...&format=json'
 TG_BOT_TOKEN = ''  # токен от тг бота (`12345:Abcde`) для уведомлений. если не нужно - оставляй пустым
 TG_USER_ID = []  # тг айди куда должны приходить уведомления. [21957123] - для отправления уведомления только себе, [21957123, 103514123] - отправлять нескольким людями
 
-# erc20 / zora
-RELAY_BRIDGE_DESTINATION = "zora"
+# В какую сеть делать вывод
+RELAY_BRIDGE_DESTINATION = "zora" # erc20, zora
