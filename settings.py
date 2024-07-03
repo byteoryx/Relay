@@ -17,6 +17,7 @@ RPCS = {
     "base": "https://base.drpc.org",
     "zksync": "https://1rpc.io/zksync2-era",
     "zora": "https://rpc.zora.energy",
+    "scroll": "https://1rpc.io/scroll",
 }
 
 # -------------------------------------------
@@ -27,6 +28,7 @@ MIN_ETH_BALANCE = 0.1  # если баланс в Ethereum/Zora меньше у�
 WITHDRAWAL_CHAIN = [  # выводит с OKX в любую рандом сеть из указанных (arbitrum, optimism, base, zksync) (для Zora сеть zksync убрать)
     "arbitrum",
     "optimism",
+    "scroll"
 ]
 OKX_WITHDRAW_VALUES = [0.002, 0.0025]  # выводить ETH в рандом сеть от и до 
 

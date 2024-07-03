@@ -228,6 +228,9 @@ class Wallet:
             case "zksync":
                 CHAIN = 'zkSync Era'
                 SYMBOL = 'ETH'
+            case "scrol":
+                CHAIN = "Scroll"
+                SYMBOL = "ETH"
 
         self.wait_for_gwei()
 

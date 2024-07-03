@@ -26,6 +26,8 @@ def run_random_account(excel: Excel):
             if settings.MIN_ETH_BALANCE != 0:
                 if destination_chain == "erc20":
                     balance = wallet.get_balance(chain_name="ethereum", human=True)
+                elif destination_chain == "scroll":
+                    balance = wallet.get_balance(chain_name="scroll", human=True)
                 else:
                     balance = wallet.get_balance(chain_name="zora", human=True)
 
@@ -36,12 +38,16 @@ def run_random_account(excel: Excel):
 
                     if destination_chain == "erc20":
                         eth_balance = wallet.get_balance(chain_name="ethereum", human=True)
+                    elif destination_chain == "scroll":
+                        eth_balance = wallet.get_balance(chain_name="scroll", human=True)
                     else:
                         eth_balance = wallet.get_balance(chain_name="zora", human=True)
 
                     Relay(wallet=wallet, from_chain=chain, amount=amount, destination=destination_chain)
                     if destination_chain == "erc20":
                         wallet.wait_balance(chain_name="ethereum", needed_balance=eth_balance, only_more=True)
+                    elif destination_chain == "scroll":
+                        wallet.wait_balance(chain_name="scroll", needed_balance=eth_balance, only_more=True)
                     else:
                         wallet.wait_balance(chain_name="zora", needed_balance=eth_balance, only_more=True)
 
