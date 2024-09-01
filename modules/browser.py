@@ -161,8 +161,10 @@ class Browser:
                 destination_chain_id = 1
             elif destination_chain == "zora":
                 destination_chain_id = 7777777
+            elif destination_chain == "taiko":
+                destination_chain_id = 167000
             else:
-                raise Exception(f"wrong destination chain. should be erc20 or zora. your input is '{destination_chain}'")
+                raise Exception(f"wrong destination chain. should be erc20 or zora or taiko. your input is '{destination_chain}'")
 
             if chain == "arbitrum": chain_id = 42161
             elif chain == "optimism": chain_id = 10

@@ -19,7 +19,7 @@ def run_random_account(excel: Excel):
             logger.info(f'[•] Web3 | {wallet.address}')
 
             destination_chain = settings.RELAY_BRIDGE_DESTINATION.lower()
-            if destination_chain not in ("erc20", "zora"):
+            if destination_chain not in ("erc20", "zora", "taiko"):
                 raise Exception(f"wrong destination chain selected in setting.py. Should be erc20 or zora. Selected {destination_chain}")
 
 
@@ -29,7 +29,7 @@ def run_random_account(excel: Excel):
                 elif destination_chain == "scroll":
                     balance = wallet.get_balance(chain_name="scroll", human=True)
                 elif destination_chain == "taiko":
-                    balance = wallet.get_balance(chain_name="taiko", human=True)                    
+                    balance = wallet.get_balance(chain_name="taiko", human=True)
                 else:
                     balance = wallet.get_balance(chain_name="zora", human=True)
 
@@ -43,7 +43,7 @@ def run_random_account(excel: Excel):
                     elif destination_chain == "scroll":
                         eth_balance = wallet.get_balance(chain_name="scroll", human=True)
                     elif destination_chain == "taiko":
-                        eth_balance = wallet.get_balance(chain_name="taiko", human=True)                          
+                        eth_balance = wallet.get_balance(chain_name="taiko", human=True)
                     else:
                         eth_balance = wallet.get_balance(chain_name="zora", human=True)
 
@@ -53,7 +53,7 @@ def run_random_account(excel: Excel):
                     elif destination_chain == "scroll":
                         wallet.wait_balance(chain_name="scroll", needed_balance=eth_balance, only_more=True)
                     elif destination_chain == "taiko":
-                        wallet.wait_balance(chain_name="taiko", needed_balance=eth_balance, only_more=True)                        
+                        wallet.wait_balance(chain_name="taiko", needed_balance=eth_balance, only_more=True)
                     else:
                         wallet.wait_balance(chain_name="zora", needed_balance=eth_balance, only_more=True)
 
