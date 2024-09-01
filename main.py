@@ -28,6 +28,8 @@ def run_random_account(excel: Excel):
                     balance = wallet.get_balance(chain_name="ethereum", human=True)
                 elif destination_chain == "scroll":
                     balance = wallet.get_balance(chain_name="scroll", human=True)
+                elif destination_chain == "taiko":
+                    balance = wallet.get_balance(chain_name="taiko", human=True)                    
                 else:
                     balance = wallet.get_balance(chain_name="zora", human=True)
 
@@ -40,6 +42,8 @@ def run_random_account(excel: Excel):
                         eth_balance = wallet.get_balance(chain_name="ethereum", human=True)
                     elif destination_chain == "scroll":
                         eth_balance = wallet.get_balance(chain_name="scroll", human=True)
+                    elif destination_chain == "taiko":
+                        eth_balance = wallet.get_balance(chain_name="taiko", human=True)                          
                     else:
                         eth_balance = wallet.get_balance(chain_name="zora", human=True)
 
@@ -48,6 +52,8 @@ def run_random_account(excel: Excel):
                         wallet.wait_balance(chain_name="ethereum", needed_balance=eth_balance, only_more=True)
                     elif destination_chain == "scroll":
                         wallet.wait_balance(chain_name="scroll", needed_balance=eth_balance, only_more=True)
+                    elif destination_chain == "taiko":
+                        wallet.wait_balance(chain_name="taiko", needed_balance=eth_balance, only_more=True)                        
                     else:
                         wallet.wait_balance(chain_name="zora", needed_balance=eth_balance, only_more=True)
 

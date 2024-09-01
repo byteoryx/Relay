@@ -18,17 +18,19 @@ RPCS = {
     "zksync": "https://1rpc.io/zksync2-era",
     "zora": "https://rpc.zora.energy",
     "scroll": "https://1rpc.io/scroll",
+    "taiko": "https://rpc.ankr.com/taiko",
 }
 
 # -------------------------------------------
 
 # OKX
-RELAY_BRIDGE_DESTINATION = "zora" # В какую конечную сеть делать вывод (erc20, zora)
+RELAY_BRIDGE_DESTINATION = "zora" # В какую конечную сеть делать вывод (erc20, zora, scroll, taiko)
 MIN_ETH_BALANCE = 0.1  # если баланс в Ethereum/Zora меньше указанного - выводит в рандом сеть с OKX и бриджит в эту сеть (если указать 0, то проверять баланс не будет)
-WITHDRAWAL_CHAIN = [  # выводит с OKX в любую рандом сеть из указанных (arbitrum, optimism, base, zksync) (для Zora сеть zksync убрать)
+WITHDRAWAL_CHAIN = [  # выводит с OKX в любую рандом сеть из указанных (arbitrum, optimism, base, zksync) (для Zora сеть zksync убрать / для taiko Тоже, так как комиссия высокая)
     "arbitrum",
     "optimism",
-    "scroll"
+    "base",
+    "zksync"
 ]
 OKX_WITHDRAW_VALUES = [0.002, 0.0025]  # выводить ETH в рандом сеть от и до 
 
